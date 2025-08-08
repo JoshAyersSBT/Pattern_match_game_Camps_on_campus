@@ -51,25 +51,32 @@ void setup() {
   playSequence();
 }
 
-// === Loop ===
 void loop() {
-  if (acceptingInput) {
-    for (int i = 0; i < 4; i++) {
-      if (buttons[i].onPress()) {
-        flashLED(i); // feedback
-        if (i == sequence[userIndex]) {
-          userIndex++;
-          if (userIndex >= currentLength) {
-            delay(500);
-            nextRound();
-          }
-        } else {
-          gameOver();
+  if (!acceptingInput) return;
+
+  for (int i = 0; i < 4; i++) {
+    bool currentState = buttons[i].read(); // true if pressed
+
+    // Detect full press-release cycle
+    if (prevButtonStates[i] && !currentState) {
+      // Button was just released — count it as a press
+      flashLED(i); // Feedback
+
+      if (i == sequence[userIndex]) {
+        userIndex++;
+        if (userIndex >= currentLength) {
+          delay(500);
+          nextRound();
         }
+      } else {
+        gameOver();
       }
     }
+
+    prevButtonStates[i] = currentState;
   }
 }
+
 
 // === Game Functions ===
 void flashLED(int index) {
@@ -92,14 +99,21 @@ void playSequence() {
 }
 
 void nextRound() {
+  int newButton;
+  do {
+    newButton = random(0, 4);
+  } while (newButton == sequence[currentLength - 1]); // avoid repeat
+  sequence[currentLength] = newButton;
   currentLength++;
+
   if (currentLength >= MAX_SEQUENCE_LENGTH) {
     Serial.println("You win!");
     while (true);
   }
-  sequence[currentLength - 1] = random(0, 4);
+
   playSequence();
 }
+
 
 void gameOver() {
   Serial.println("Wrong! Game Over.");
