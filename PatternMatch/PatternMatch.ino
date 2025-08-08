@@ -29,6 +29,8 @@ Button buttons[] = {
 };
 
 // === Game State ===
+bool prevButtonStates[4] = {false, false, false, false};
+
 const int MAX_SEQUENCE_LENGTH = 100;
 int sequence[MAX_SEQUENCE_LENGTH];
 int currentLength = 1;
